@@ -1,13 +1,20 @@
+// Node require modules
+
 var inquire = require("inquirer");
 var request = require("request");
 var fs = require("fs");
 var Twitter = require("twitter");
 var Spotify = require('node-spotify-api');
 var twitData = require("./keys");
+
+// Import twitter keys 
+
 var consKey = twitData.consumer_key;
 var consSecret = twitData.consumer_secret;
 var accessToken = twitData.access_token_key;
 var accessSecret = twitData.access_token_secret;
+
+// Prompt user to choose action & pass to chooseAction function
 
 inquire.prompt([{
     type: "list",
@@ -19,6 +26,7 @@ inquire.prompt([{
     chooseAction(action);
 });
 
+// Decide action to take
 
 function chooseAction(action, variable) {
     console.log(action);
@@ -33,12 +41,14 @@ function chooseAction(action, variable) {
         case "spotify-this-song":
             console.log("spotify");
             //spotify
+            // Check if a track was already passed in - if not prompt for one and pass to spotify function
             if (variable === undefined) {
                 inquire.prompt([{
                     type: "input",
                     message: "Enter a song: ",
                     name: "track"
                 }]).then(function (answers) {
+                    // Assign a song if user doesn't enter one
                     if (answers.track === "") {
                         var track = "The Sign";
                     } else {
@@ -48,6 +58,7 @@ function chooseAction(action, variable) {
                     spotifyFunc(track);
                 });
             } else {
+                // If track already passed in then pass it to spotify function
                 spotifyFunc(variable);
             }
             break;
@@ -55,6 +66,7 @@ function chooseAction(action, variable) {
         case "movie-this":
             console.log("OMDB");
             //omdb
+            // Check if a movie was already passed in - if not prompt for one and pass to omdb function
             if (variable === undefined) {
                 inquire.prompt([{
                     type: "input",
@@ -70,6 +82,7 @@ function chooseAction(action, variable) {
                     omdbFunc(movie);
                 });
             } else {
+                // If movie already passed in then pass it to omdb function
                 omdbFunc(variable);
             }
             break;
@@ -81,7 +94,12 @@ function chooseAction(action, variable) {
     }
 }
 
+// Twitter function
+
 function twitterFunc() {
+
+    // Twitter keys
+
     var client = new Twitter({
         consumer_key: consKey,
         consumer_secret: consSecret,
@@ -89,9 +107,12 @@ function twitterFunc() {
         access_token_secret: accessSecret
     });
 
+    // Twitter account name
+
     var params = {
         screen_name: 'Node_You_Dont'
     };
+    // Grab users tweets - log them - display them in console
     client.get('statuses/user_timeline', params, function (error, tweets, response) {
         if (!error) {
             for (var i in tweets) {
@@ -105,11 +126,18 @@ function twitterFunc() {
     });
 }
 
+// Spotify function
+
 function spotifyFunc(track) {
+
+    // Spotify keys
+
     var spotify = new Spotify({
         id: '89edad3950ef4c02baa944c070fd296a',
         secret: 'cdb95663536c4814a8dcc8a9ff993d28'
     });
+
+    // Search spotify for track - display info - log info
 
     spotify.search({
         type: 'track',
@@ -127,9 +155,15 @@ function spotifyFunc(track) {
     });
 }
 
+// OMDB function
+
 function omdbFunc(movie) {
 
+    // Search URL
+
     var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=40e9cece";
+
+    // Search movie title - display info - log info 
 
     request(queryUrl, function (error, response, body) {
 
@@ -150,9 +184,15 @@ function omdbFunc(movie) {
 
 }
 
+// Do What it Says Function 
+
 function fsFunc() {
 
+    // Create empty array
+
     var dataArr = [];
+
+    // Read data in random.txt
 
     fs.readFile("random.txt", "utf8", function (error, data) {
 
@@ -160,9 +200,9 @@ function fsFunc() {
             return console.log(error);
         }
 
-
-
         var dataArr = data.split(",");
+
+        // Set variables to pass into chooseAction function
 
         var action = dataArr[0];
         var variable = dataArr[1];
@@ -172,14 +212,17 @@ function fsFunc() {
     });
 }
 
+// Log results function
+
 function logResults(result1, result2) {
+    // Append variables passed into function onto log.txt file
     fs.appendFile("log.txt", "\n" + result1 + " | " + result2, function (err) {
 
         if (err) {
             return console.log(err);
         }
 
-
+        // Log that file was updated
         console.log("log.txt was updated!");
 
     });
